@@ -6,7 +6,7 @@ curl -X POST --silent --data @/home/opendata/public_html/lufthygiene/roh/form_ch
 # Feldbergstrasse single commands: 
 curl -X POST --silent --data @/home/opendata/public_html/lufthygiene/roh/form_feldbergstrasse_bis_2018.txt --output /home/opendata/public_html/lufthygiene/roh/Feldbergstrasse_Luft_01.01.2000.csv https://luftqualitaet.ch/messdaten/datenarchiv/abfrage
 curl -X POST --silent --data @/home/opendata/public_html/lufthygiene/roh/form_feldbergstrasse_ab_2019.txt  --output /home/opendata/public_html/lufthygiene/roh/Feldbergstrasse_Luft_01.01.2019.csv https://luftqualitaet.ch/messdaten/datenarchiv/abfrage
-#Feldbergstrasse on one line for crontab at cyon: 
+# Feldbergstrasse on one line for crontab at cyon: 
 curl -X POST --silent --data @/home/opendata/public_html/lufthygiene/roh/form_feldbergstrasse_bis_2018.txt --output /home/opendata/public_html/lufthygiene/roh/Feldbergstrasse_Luft_01.01.2000.csv https://luftqualitaet.ch/messdaten/datenarchiv/abfrage && curl -X POST --silent --data @/home/opendata/public_html/lufthygiene/roh/form_feldbergstrasse_ab_2019.txt  --output /home/opendata/public_html/lufthygiene/roh/Feldbergstrasse_Luft_01.01.2019.csv https://luftqualitaet.ch/messdaten/datenarchiv/abfrage
 # St. Johannplatz single commands: 
 curl -X POST --silent --data @/home/opendata/public_html/lufthygiene/roh/form_st_johannplatz_bis_2018.txt --output /home/opendata/public_html/lufthygiene/roh/St_Johannplatz_Luft_01.01.2000.csv https://luftqualitaet.ch/messdaten/datenarchiv/abfrage
@@ -14,7 +14,8 @@ curl -X POST --silent --data @/home/opendata/public_html/lufthygiene/roh/form_st
 # St. Johannplatz on one line for crontab at cyon: 
 curl -X POST --silent --data @/home/opendata/public_html/lufthygiene/roh/form_st_johannplatz_bis_2018.txt --output /home/opendata/public_html/lufthygiene/roh/St_Johannplatz_Luft_01.01.2000.csv https://luftqualitaet.ch/messdaten/datenarchiv/abfrage && curl -X POST --silent --data @/home/opendata/public_html/lufthygiene/roh/form_st_johannplatz_ab_2019.txt  --output /home/opendata/public_html/lufthygiene/roh/St_Johannplatz_Luft_01.01.2019.csv https://luftqualitaet.ch/messdaten/datenarchiv/abfrage
 
-
+# Basel-Binningen for crontab at cyon.ch: 
+curl -X GET --silent --output /home/opendata/public_html/lufthygiene/roh/Basel_Binningen_Luft_01.01.2000.csv -G "https://bafu.meteotest.ch/nabel/index.php/ausgabe/index/german" -d "webgrab=no&schadstoff=1&station=1&schadstoffsliste[]=1&schadstoffsliste[]=2&schadstoffsliste[]=4&schadstoffsliste[]=6&schadstoffsliste[]=7&schadstoffsliste[]=8&schadstoffsliste[]=12&schadstoffsliste[]=13&schadstoffsliste[]=9&schadstoffsliste[]=10&schadstoffsliste[]=11&abfrageflag=true&nach=station&datentyp=stunden&zeitraum=frei&von=01.05.2018&bis=31.12.2050&ausgabe=csv"
 
 
 # The following cronjob code is still in use for a certain time (as long as we get the current measure data every 30 minutes via FTP upload) but not really needed anymore. 
