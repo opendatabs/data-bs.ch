@@ -1,0 +1,200 @@
+<html>
+    <head>
+        <meta charset="UTF-8" name="viewport" content="width=device-width, initial-scale=1">
+        <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.2/modernizr.js"></script>
+        <script src="https://github.highcharts.com/master/highstock.src.js"></script>
+        <script src="https://github.highcharts.com/master/modules/data.src.js"></script>        
+        <script src="https://github.highcharts.com/master/modules/exporting.js"></script>
+        <!--
+        <script src="https://code.highcharts.com/modules/boost-canvas.js"></script>    
+        <script src="https://code.highcharts.com/modules/boost.js"></script>    
+        -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.1/moment.min.js"></script>
+
+        <style>
+            #container {
+            	min-width: 310px;
+            	max-width: 1200px;
+            	height: 600px;
+            	margin: 0 auto;
+            }
+
+            .no-js #loader { display: none;  }
+            .js #loader { display: block; position: absolute; left: 100px; top: 0; }
+            .se-pre-con {
+            	position: fixed;
+            	left: 0px;
+            	top: 0px;
+            	width: 100%;
+            	height: 100%;
+            	z-index: 9999;
+            	background: url(images/128x128/Preloader_9.gif) center no-repeat #fff;
+            }            
+
+        </style>
+    </head>
+    
+    <body>
+        <div id="container" style="display:none;" class="animate-bottom"></div>
+        <div class="se-pre-con"></div>
+        
+        
+        <script>
+            
+            /*
+                global Highcharts
+                global moment
+                global $
+            */
+
+            Highcharts.setOptions({
+                lang: {
+                        decimalPoint: ',',
+                        thousandsSep: '.',
+                        loading: 'Daten werden geladen...',
+                        months: ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'],
+                        weekdays: ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'],
+                        shortMonths: ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'],
+                        exportButtonTitle: "Exportieren",
+                        printButtonTitle: "Drucken",
+                        rangeSelectorFrom: "Von",
+                        rangeSelectorTo: "Bis",
+                        rangeSelectorZoom: "Zeitraum",
+                        downloadPNG: 'Download als PNG-Bild',
+                        downloadJPEG: 'Download als JPEG-Bild',
+                        downloadPDF: 'Download als PDF-Dokument',
+                        downloadSVG: 'Download als SVG-Bild',
+                        resetZoom: "Zoom zurücksetzen",
+                        resetZoomTitle: "Zoom zurücksetzen"             
+                    }        
+            });
+
+            
+            Highcharts.stockChart('container', {
+                title: {
+                    text: 'Online-Daten Rheinüberwachungsstation Weil am Rhein',
+                    align: 'left',
+                },
+                subtitle: {
+                    text: '1.1.2002 bis 31.12.2019 plausibilisierte Daten stündlich, danach Rohdaten viertelstündlich',
+                    align: 'left',
+                },
+                data: {                    
+                    csvURL: 'https://rues.data-bs.ch/onlinedaten/online2002_aktuell.csv',
+                    enablePolling: false,
+                    dataRefreshRate: 15*60,
+                    parseDate: function(v, a, b){
+                        //var date = moment(v, 'DD.MM.YYYY HH:mm:ss').toDate();
+                        var date = moment.utc(v, 'DD.MM.YYYY HH:mm:ss').utc().valueOf();
+                        return date;
+                    },
+                    parsed: function(columns){
+                        //remove second datetime column
+                        columns.splice(1, 1);
+                        //rename series
+                        columns[1][0] = 'Elektrische Leitfähigkeit';
+                        columns[2][0] = 'Sauerstoffgehalt';
+                        columns[3][0] = 'pH';
+                        columns[4][0] = 'Temperatur';
+                        //display chart
+                        $(".se-pre-con").fadeOut("slow");
+                        $("#container").css('display', 'block');
+                    },
+                    seriesMapping: [
+                        {x: 0, y: 1},
+                        {x: 0, y: 2},
+                        {x: 0, y: 3},
+                        {x: 0, y: 4},
+                    ]
+                },
+                xAxis: {
+                    type: "datetime",
+                },
+                yAxis: [
+                    {
+                        title: {
+                            text: 'Temperatur', 
+                        },
+                        height: '25%',
+                        //opposite: false,
+                        offset: 0, 
+                        showInNavigator: true
+                    },
+                    {   
+                        title: {
+                            text: "pH", 
+                        },
+                        height: '25%',
+                        top: '25%',
+                        //opposite: false,
+                        offset: 0
+                    },
+                    {
+                        title: {
+                            text: "Sauerstoffgehalt", 
+                        },
+                        height: '25%',
+                        top: '50%', 
+                        //opposite: false,
+                        offset: 0
+                    },
+                    {   
+                        title: {
+                            text: "Elektrische Leitfähigkeit", 
+                        },
+                        height: '25%',
+                        top: '75%',
+                        //opposite: false,
+                        offset: 0
+                    }
+                    ],
+                series: [
+                    {
+                        yAxis: 3, 
+                    },
+                    {
+                        yAxis: 2, 
+                    },
+                    {
+                        yAxis: 1,
+                    },
+                    {
+                        yAxis: 0,
+                    }
+                    ], 
+                rangeSelector: {
+                    selected: 5, 
+                    inputDateFormat: '%d.%m.%Y'
+                },
+                plotOptions: {
+                    line: {
+                        tooltip: {
+                            valueDecimals: 2
+                        }
+                    }
+                },
+                chart: {
+                    //zoomType: 'x', 
+                    /*
+                    panning: true, 
+                    panKey: 'shift',
+                    resetZoomEnabled: true,
+                    resetZoomButton: {
+                        position: {
+                            align: 'middle',
+                            verticalAlign: 'top'
+                        }
+                    },
+                    */
+                },
+                navigator: {
+                    enabled: true,
+                    baseSeries: 3
+                }, 
+            });            
+            
+
+        </script>
+    </body>
+</html>

@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8" name="viewport" content="width=device-width, initial-scale=1">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.2/modernizr.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+		<script src="https://cdn.rawgit.com/jquery/jquery-ui/74f8a0ac/ui/i18n/datepicker-de.js"></script>      
+		<script src="https://code.highcharts.com/stock/highstock.js"></script>
+		<script src="https://code.highcharts.com/stock/modules/exporting.js"></script>
+        <!--
+        <script src="https://code.highcharts.com/modules/boost-canvas.js"></script>    
+        <script src="https://code.highcharts.com/modules/boost.js"></script>    
+        -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.1/moment.min.js"></script>
+		<link href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/base/jquery-ui.css" rel="stylesheet" />
+        <style>
+            #container {
+            	min-width: 310px;
+            	max-width: 1200px;
+            	height: 600px;
+            	margin: 0 auto;
+            }
+
+        </style>
+    </head>
+    
+    <body>
+        <div id="container" class="animate-bottom"></div>
+        <!--div class="se-pre-con"></div-->
+        
+        
+        <script>
+            
+            /*
+                global Highcharts
+                global moment
+                global $
+            */
+
+			/**
+			 * Load new data depending on the selected min and max
+			 */
+			 
+			var baseUrl = 'https://rues.data-bs.ch/onlinedaten/from-sql.php';
+			
+			var temperatureData;
+			var phData;
+			var o2Data;
+			var lfData;
+
+			
+			function splitData(data){
+				temperatureData = [];
+				phData = [];
+				o2Data = [];
+				lfData = [];
+
+			    for (var i = 0; i < data.length; i++) {
+			        temperatureData.push([
+			            data[i][0], 
+			            data[i][4]
+			        ]);
+			
+			        phData.push([
+			            data[i][0],
+			            data[i][3] 
+			        ]);
+			        
+			        o2Data.push([
+			            data[i][0],
+			            data[i][2] 
+			        ]);
+
+			        lfData.push([
+			            data[i][0],
+			            data[i][1]
+			        ]);
+			    }
+			}
+
+			
+			function afterSetExtremes(e) {
+
+				var chart = Highcharts.charts[0];
+
+				chart.showLoading();
+				var url = baseUrl +'?start=' + Math.round(e.min) +'&end=' + Math.round(e.max) + '&callback=?';
+				//console.log(url);
+				$.getJSON(url, function (data) {
+					splitData(data);
+					chart.series[3].setData(temperatureData, false);
+					chart.series[2].setData(phData, false);
+					chart.series[1].setData(o2Data, false);
+					chart.series[0].setData(lfData, false);
+					chart.redraw();
+					chart.hideLoading();
+				});
+			}
+			
+			//var now = Date.now();
+			//var url = baseUrl + '?start=' + (now - 5 * 365 * 24 * 3600 * 1000 ) + '&end=' + now + '&callback=?';
+			var url = baseUrl + '?callback=?';
+			// See source code from the JSONP handler at https://github.com/highcharts/highcharts/blob/master/samples/data/from-sql.php
+			$.getJSON(url, function (data) {
+			
+				// Add a null value for the end date so that the latest timestamp is available to Highcharts
+				data = [].concat(data, [[new Date().getTime(), null, null, null, null]]);
+				
+				splitData(data)	;
+	
+				Highcharts.setOptions({
+					lang: {
+							decimalPoint: ',',
+							thousandsSep: '.',
+							loading: 'Daten werden geladen...',
+							months: ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'],
+							weekdays: ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'],
+							shortMonths: ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'],
+							exportButtonTitle: "Exportieren",
+							printButtonTitle: "Drucken",
+							rangeSelectorFrom: "Von",
+							rangeSelectorTo: "Bis",
+							rangeSelectorZoom: "Zeitraum",
+							downloadPNG: 'Download als PNG-Bild',
+							downloadJPEG: 'Download als JPEG-Bild',
+							downloadPDF: 'Download als PDF-Dokument',
+							downloadSVG: 'Download als SVG-Bild',
+							resetZoom: "Zoom zurücksetzen",
+							resetZoomTitle: "Zoom zurücksetzen"             
+						}        
+				});
+
+				
+				Highcharts.stockChart('container', {
+					title: {
+						text: 'Online-Daten Rheinüberwachungsstation Weil am Rhein',
+						align: 'left',
+						style: {
+							fontFamily: 'Arial, "Helvetica Neue", Helvetica, sans-serif',
+							fontSize: "14px",
+							fontWeight: 'bold',
+							color: 'black'
+						}
+					},
+					subtitle: {
+						text: '1.1.2002 bis 31.12.2019 plausibilisierte Daten stündlich, danach Rohdaten viertelstündlich; <a href="https://de.wikipedia.org/wiki/Mitteleurop%C3%A4ische_Zeit">Mitteleuropäische Zeit.</a>',
+						align: 'left',
+						style: {
+							fontFamily: 'Arial, "Helvetica Neue", Helvetica, sans-serif',
+							color: 'black'
+						}
+					},
+
+					xAxis: {
+						type: "datetime",
+						ordinal: false,
+						events: {
+							afterSetExtremes: afterSetExtremes
+						}
+					},
+					yAxis: [
+						{
+							title: {
+								text: 'Temperatur', 
+							},
+							height: '25%',
+							//opposite: false,
+							offset: 0, 
+							showInNavigator: true
+						},
+						{   
+							title: {
+								text: "pH", 
+							},
+							height: '25%',
+							top: '25%',
+							//opposite: false,
+							offset: 0
+						},
+						{
+							title: {
+								text: "Sauerstoffgehalt", 
+							},
+							height: '25%',
+							top: '50%', 
+							//opposite: false,
+							offset: 0
+						},
+						{   
+							title: {
+								text: "Elektrische Leitfähigkeit", 
+							},
+							height: '25%',
+							top: '75%',
+							//opposite: false,
+							offset: 0
+						}
+						],
+						/*
+						series: [{
+							data: data,
+							dataGrouping: {
+								enabled: false
+							}
+						}],
+						*/
+	                series: [
+						{
+							name: 'Elektrische Leitfähigkeit',
+							yAxis: 3, 
+							data: lfData
+							
+						},
+						{
+							name: 'Sauerstoffgehalt',
+							yAxis: 2, 
+							data: o2Data
+						},
+						{
+							name: 'pH',
+							yAxis: 1,
+							data: phData
+						},
+						{
+							name: 'Temperatur',
+							yAxis: 0,
+							data: temperatureData
+						}
+						], 
+	
+					rangeSelector: {
+						allButtonsEnabled: true,
+						selected: 6, 
+						inputDateFormat: '%d.%m.%Y',
+						labelStyle: {
+							fontFamily: 'Arial, "Helvetica Neue", Helvetica, sans-serif',
+							color: 'black'
+						},						
+						buttons: [{
+						    type: 'day',
+						    count: 1,
+						    text: '1 T'
+						},{
+						    type: 'week',
+						    count: 1,
+						    text: '1 W'						    
+						},{
+						    type: 'month',
+						    count: 1,
+						    text: '1 M'
+						}, {
+						    type: 'month',
+						    count: 6,
+						    text: '6 M'
+						}, {
+						    type: 'ytd',
+						    text: 'YTD'
+						}, {
+						    type: 'year',
+						    count: 1,
+						    text: '1 J'
+						}, {
+						    type: 'all',
+						    text: 'Alle J'
+						}]
+					},
+					plotOptions: {
+						line: {
+							tooltip: {
+								valueDecimals: 2
+							}
+						}
+					},
+					chart: {
+						animation: true,
+						//zoomType: 'x', 
+						/*
+						panning: true, 
+						panKey: 'shift',
+						resetZoomEnabled: true,
+						resetZoomButton: {
+							position: {
+								align: 'middle',
+								verticalAlign: 'top'
+							}
+						},
+						*/
+					},
+					loading: {
+						labelStyle: {
+				            fontFamily: 'Arial'
+				        }					
+					},
+					navigator: {
+						adaptToUpdatedData: false,
+						enabled: true,
+						baseSeries: 3
+					}, 
+				    credits: {
+				        enabled: false
+				    },					
+				}, function (chart) {
+				        // apply the date pickers
+				        setTimeout(function () {
+				            $('input.highcharts-range-selector', $(chart.container).parent())
+				                .datepicker();
+				        }, 0);
+				        
+				        // click the desired rangeSelector
+				        $('.highcharts-range-selector-buttons .highcharts-button').first().next().click();
+				        $('#container').show();
+			    });            
+			});
+
+			// Set the datepicker's date format
+			$.datepicker.setDefaults({
+			    dateFormat: 'yy-mm-dd',
+				changeMonth: true,
+				changeYear: true,	
+				yearRange: "c-30:c+30",
+				minDate: new Date(2002, 0, 1),
+				maxDate: new Date(),
+			    onSelect: function () {
+			        this.onchange();
+			        this.onblur();
+			    }
+			});
+
+        </script>
+    </body>
+</html>
