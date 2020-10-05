@@ -1,11 +1,13 @@
 # Below are the cronjobs at cyon.ch to be run at 05:00 every day.
 
-# Backup the current data file with a timestamp in its name so that old values are retained (because the file contaisn a rolling window of values)
+# Backup the current data files with a timestamp in its name so that old values are retained (because the file contains a rolling window of values)
 # Escape % because crontab ses this as line breaks, see https://stackoverflow.com/a/38487305/5005585
+# 20 0 * * *
 cp /home/opendata/public_html/lufthygiene/regionales-mikroklima/airmet_bs_sensirion_pm25_aktuell.csv /home/opendata/public_html/lufthygiene/regionales-mikroklima/airmet_bs_sensirion_pm25_$(date "+\%Y-\%m-\%dT\%H-\%M-\%S").csv
+cp /home/opendata/public_html/lufthygiene/nmbs_pm25/airmet_bs_museum_pm25_aktuell.csv /home/opendata/public_html/lufthygiene/nmbs_pm25/airmet_bs_museum_pm25_$(date "+\%Y-\%m-\%dT\%H-\%M-\%S").csv
 
 # Below are the cronjobs at cyon.ch to be run at 5 minutes past the hour every hour.
-
+# 5 * * * *
 # Get hourly average data from the database via the web gui (https://luftqualitaet.ch/messdaten/datenarchiv/abfrage): 
 # Chrischona for crontab at cyon:
 curl -X POST --silent --data @/home/opendata/public_html/lufthygiene/roh/form_chrischona.txt --output /home/opendata/public_html/lufthygiene/roh/Chrischona_Luft_01.01.2000.csv https://luftqualitaet.ch/messdaten/datenarchiv/abfrage
