@@ -23,4 +23,3 @@ for file in *; do
     fi
 done
 
-# oneliner for crontab
