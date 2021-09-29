@@ -1,1 +1,0 @@
-jsform=true&querytype=station&station=bsBSJ&pollutants%5B%5D=PM10&pollutants%5B%5D=PM2.5&pollutants%5B%5D=O3&station_interval=hour&station_output=csv&pollutant_interval=hour&pollutant_output=interactive&timerange=custom&startdate=01.01.2000&stopdate=31.12.2018&submit=Abfrage
