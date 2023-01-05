@@ -10,6 +10,7 @@
  * 
  * HISTORY:
  *   07.06.2018, BL: Written for StatA BS OGD Project RUES
+ *   05.01.2023, JB: Change folder name from archiv to archiv_ods
  */
  
 error_reporting(E_ALL);
@@ -20,11 +21,11 @@ include 'functions.php';
 $dir = "/home/opendata/public_html/rues/onlinedaten";
 
 //# Get all CSV-Filenames from specific folder
-$files = array_diff(scandir($dir."/roh/archiv/"), array('..', '.'));
+$files = array_diff(scandir($dir."/roh/archiv_ods/"), array('..', '.'));
 $anz_files = count($files);
 
 //# log
-echo "Einzulesende CSV-Files im Ordner " . $dir."/roh/archiv/: $anz_files <br><br>" ;
+echo "Einzulesende CSV-Files im Ordner " . $dir."/roh/archiv_ods/: $anz_files <br><br>" ;
 
 if ($anz_files > 0) {
 	
@@ -32,7 +33,7 @@ if ($anz_files > 0) {
 	
 	//# read content of all CSV Files and INSERT content into MySQL-Database
 	foreach ($files as $id => $f) {
-		$fh = fopen($dir."/roh/archiv/".$f, "r");
+		$fh = fopen($dir."/roh/archiv_ods/".$f, "r");
 		$i=0;
 
 		//# read file content by line
@@ -64,8 +65,8 @@ if ($anz_files > 0) {
 		}
 		fclose($fh);
 
-		//# move from folder archive to archive_sql
-		rename($dir."/roh/archiv/".$f, $dir."/roh/archiv_sql/".$f); 
+		//# move from folder archive_ods to archive_sql
+		rename($dir."/roh/archiv_ods/".$f, $dir."/roh/archiv_sql/".$f);
 
 	}
 
