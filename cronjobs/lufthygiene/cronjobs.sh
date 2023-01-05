@@ -3,26 +3,10 @@
 # Backup the current data files with a timestamp in its name so that old values are retained (because the file contains a rolling window of values)
 # Escape % because crontab ses this as line breaks, see https://stackoverflow.com/a/38487305/5005585
 # 20 0 * * *
-cp /home/opendata/public_html/lufthygiene/regionales-mikroklima/airmet_bs_sensirion_pm25_aktuell.csv /home/opendata/public_html/lufthygiene/regionales-mikroklima/airmet_bs_sensirion_pm25_$(date "+\%Y-\%m-\%dT\%H-\%M-\%S").csv
-cp /home/opendata/public_html/lufthygiene/nmbs_pm25/airmet_bs_museum_pm25_aktuell.csv /home/opendata/public_html/lufthygiene/nmbs_pm25/airmet_bs_museum_pm25_$(date "+\%Y-\%m-\%dT\%H-\%M-\%S").csv
+cp -p /home/opendata/public_html/lufthygiene/regionales-mikroklima/airmet_bs_sensirion_pm25_aktuell.csv /home/opendata/public_html/lufthygiene/pm25/archive/airmet_bs_sensirion_pm25_$(date "+\%Y-\%m-\%dT\%H-\%M-\%S").csv
+cp -p /home/opendata/public_html/lufthygiene/nmbs_pm25/airmet_bs_museum_pm25_aktuell.csv /home/opendata/public_html/lufthygiene/nmbs_pm25_archive/airmet_bs_museum_pm25_$(date "+\%Y-\%m-\%dT\%H-\%M-\%S").csv
 
-# Below are the cronjobs at cyon.ch to be run at 5 minutes past the hour every hour.
-# 5 * * * *
-# Get hourly average data from the database via the web gui (https://luftqualitaet.ch/messdaten/datenarchiv/abfrage): 
-# Chrischona for crontab at cyon:
-curl -X POST --silent --data @/home/opendata/public_html/lufthygiene/roh/form_chrischona.txt --output /home/opendata/public_html/lufthygiene/roh/Chrischona_Luft_01.01.2000.csv https://luftqualitaet.ch/messdaten/datenarchiv/abfrage
-# Feldbergstrasse single commands: 
-curl -X POST --silent --data @/home/opendata/public_html/lufthygiene/roh/form_feldbergstrasse_bis_2018.txt --output /home/opendata/public_html/lufthygiene/roh/Feldbergstrasse_Luft_01.01.2000.csv https://luftqualitaet.ch/messdaten/datenarchiv/abfrage
-curl -X POST --silent --data @/home/opendata/public_html/lufthygiene/roh/form_feldbergstrasse_ab_2019.txt  --output /home/opendata/public_html/lufthygiene/roh/Feldbergstrasse_Luft_01.01.2019.csv https://luftqualitaet.ch/messdaten/datenarchiv/abfrage
-# Feldbergstrasse on one line for crontab at cyon: 
-curl -X POST --silent --data @/home/opendata/public_html/lufthygiene/roh/form_feldbergstrasse_bis_2018.txt --output /home/opendata/public_html/lufthygiene/roh/Feldbergstrasse_Luft_01.01.2000.csv https://luftqualitaet.ch/messdaten/datenarchiv/abfrage && curl -X POST --silent --data @/home/opendata/public_html/lufthygiene/roh/form_feldbergstrasse_ab_2019.txt  --output /home/opendata/public_html/lufthygiene/roh/Feldbergstrasse_Luft_01.01.2019.csv https://luftqualitaet.ch/messdaten/datenarchiv/abfrage
-# St. Johannplatz single commands: 
-curl -X POST --silent --data @/home/opendata/public_html/lufthygiene/roh/form_st_johannplatz_bis_2018.txt --output /home/opendata/public_html/lufthygiene/roh/St_Johannplatz_Luft_01.01.2000.csv https://luftqualitaet.ch/messdaten/datenarchiv/abfrage
-curl -X POST --silent --data @/home/opendata/public_html/lufthygiene/roh/form_st_johannplatz_ab_2019.txt  --output /home/opendata/public_html/lufthygiene/roh/St_Johannplatz_Luft_01.01.2019.csv https://luftqualitaet.ch/messdaten/datenarchiv/abfrage
-# St. Johannplatz on one line for crontab at cyon: 
-curl -X POST --silent --data @/home/opendata/public_html/lufthygiene/roh/form_st_johannplatz_bis_2018.txt --output /home/opendata/public_html/lufthygiene/roh/St_Johannplatz_Luft_01.01.2000.csv https://luftqualitaet.ch/messdaten/datenarchiv/abfrage && curl -X POST --silent --data @/home/opendata/public_html/lufthygiene/roh/form_st_johannplatz_ab_2019.txt  --output /home/opendata/public_html/lufthygiene/roh/St_Johannplatz_Luft_01.01.2019.csv https://luftqualitaet.ch/messdaten/datenarchiv/abfrage
-
-# Basel-Binningen for crontab at cyon.ch:
+# Basel-Binningen for crontab every 15 minutes at cyon.ch:
 curl -X GET --silent --output /home/opendata/public_html/lufthygiene/roh/Basel_Binningen_Luft_01.01.2000.csv -G "https://bafu.meteotest.ch/nabel/index.php/ausgabe/index/german" -d "webgrab=no&schadstoff=1&stationsliste[]=5&station=5&schadstoffsliste[]=1&schadstoffsliste[]=2&schadstoffsliste[]=3&schadstoffsliste[]=6&schadstoffsliste[]=7&schadstoffsliste[]=12&schadstoffsliste[]=8&schadstoffsliste[]=13&schadstoffsliste[]=9&schadstoffsliste[]=10&schadstoffsliste[]=11&datentyp=stunden&zeitraum=frei&von=2018-06-01&bis=$(date +\%Y-\%m-\%d)&ausgabe=csv&abfrageflag=true&nach=station"
 
 # The following cronjob code is still in use for a certain time (as long as we get the current measure data every 30 minutes via FTP upload) but not really needed anymore. 
