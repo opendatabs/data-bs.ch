@@ -16,25 +16,59 @@
  *   07.06.2018, JB/BL: Adapted for StatA BS OGD Project RUES
  */
 
+// Suppress error output to browser to prevent breaking JSONP format
 error_reporting(E_ALL);
-include 'dbconnect.php'; //# MySQL Database connection handling, returns $cnx
-include 'functions.php'; //# diverse PHP functions, e.g. query() 
- 
+ini_set('display_errors', 0);
+ini_set('log_errors', 1);
+
+// Start output buffering to catch any unexpected output
+ob_start();
+
+// Try to include database connection, but handle errors gracefully
+try {
+	@include 'dbconnect.php'; //# MySQL Database connection handling, returns $cnx
+	@include 'functions.php'; //# diverse PHP functions, e.g. query()
+} catch (Exception $e) {
+	// Error will be handled below
+}
+
+// Clear any output that might have been generated (errors, warnings, etc.)
+ob_clean();
+
+// Check if database connection is available
+if (!isset($cnx) || !$cnx || mysqli_connect_errno()) {
+	$callback = isset($_GET['callback']) ? $_GET['callback'] : 'callback';
+	if (preg_match('/^[a-zA-Z0-9_]+$/', $callback)) {
+		header('Content-Type: text/javascript');
+		echo $callback . '([]);';
+	} else {
+		header('Content-Type: text/javascript');
+		echo 'callback([]);';
+	}
+	exit;
+}
+
 // get the parameters
-$callback = $_GET['callback'];
-if (!preg_match('/^[a-zA-Z0-9_]+$/', $callback)) {
-	die('Invalid callback name');
+$callback = isset($_GET['callback']) ? $_GET['callback'] : '';
+if (!$callback || !preg_match('/^[a-zA-Z0-9_]+$/', $callback)) {
+	header('Content-Type: text/javascript');
+	echo $callback ? $callback . '([]);' : '[];';
+	exit;
 }
 
 $start = @$_GET['start'];
 if ($start && !preg_match('/^[0-9]+$/', $start)) {
-	die("Invalid start parameter: $start");
+	header('Content-Type: text/javascript');
+	echo $callback . '([]);';
+	exit;
 }
 if (!$start) $start = mktime(0,0,0,1,1,2002) * 1000;
 
 $end = @$_GET['end'];
 if ($end && !preg_match('/^[0-9]+$/', $end)) {
-	die("Invalid end parameter: $end");
+	header('Content-Type: text/javascript');
+	echo $callback . '([]);';
+	exit;
 }
 if (!$end) $end = time() * 1000;
 
@@ -75,7 +109,14 @@ $sql = "
 	where `Startzeitpunkt` between '$startTime' and '$endTime'
 	order by Startzeitpunkt
 ";
-$result = mysqli_query($cnx, $sql) or die(mysqli_error($cnx));
+
+$result = mysqli_query($cnx, $sql);
+if (!$result) {
+	// On error, return empty array in JSONP format
+	header('Content-Type: text/javascript');
+	echo $callback . '([]);';
+	exit;
+}
 
 $rows = array();
 while ($row = mysqli_fetch_assoc($result)) {
@@ -88,5 +129,7 @@ header('Content-Type: text/javascript');
 echo "/* console.log(' start = $start, end = $end, startTime = $startTime, endTime = $endTime '); */\n";
 echo $callback ."([\n" . join(",\n", $rows) ."\n]);";
 
+// End output buffering
+ob_end_flush();
 
 ?>
